@@ -4,31 +4,46 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from .models import File_Upload
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 
+
+@login_required
 def index(request):
     all_files = File_Upload.objects.all().order_by('-id')
     paginator = Paginator(all_files, 5)
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
     return render(request, 'index.html', {'page_obj': page_obj})
 
-def login(request):
-    if 'user' not in request.session:
-        if request.method == 'POST':
-            email = request.POST['email']
-            pwd = request.POST['pwd']
-            userExists = User.objects.filter(email=email, pwd=pwd)
-            if userExists.exists():
-                request.session["user"] = email
-                return redirect('index')
-            else:
-                messages.warning(request, "Wrong user or details.")
-        return render(request, 'login.html')
-    else:
+def login_view(request):
+    # Если пользователь уже аутентифицирован, перенаправляем на главную страницу
+    if request.user.is_authenticated:
         return redirect('index')
 
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('pwd')
+
+        # Получаем пользователя по email, так как authenticate требует username
+        try:
+            user = User.objects.get(email=email)
+            username = user.username
+        except User.DoesNotExist:
+            messages.error(request, "Неправильный email или пароль.")
+            return render(request, 'login.html')
+
+        # Проверяем учетные данные
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)  # Вход в систему
+            return redirect('index')
+        else:
+            messages.error(request, "Неправильный email или пароль.")
+
+    return render(request, 'login.html')
 def logout(request):
     del request.session['user']
     return redirect('login')
