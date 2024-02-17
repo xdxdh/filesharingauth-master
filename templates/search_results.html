@@ -1,0 +1,11 @@
+<!-- В вашем каталоге templates -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Результаты поиска</h2>
+<ul>
+    {% for file in files %}
+    <li>{{ file.title }} - {{ file.description }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

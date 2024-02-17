@@ -18,6 +18,14 @@ def index(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'index.html', {'page_obj': page_obj})
 
+def search_files(request):
+    query = request.GET.get('q', '')  # Получаем строку поиска из GET-параметра
+    if query:
+        files = File_Upload.objects.filter(title__icontains=query)  # Фильтруем файлы по названию
+    else:
+        files = File_Upload.objects.none()  # Если запрос пустой, возвращаем пустой запрос
+
+    return render(request, 'search_results.html', {'files': files})
 def login_view(request):
     # Если пользователь уже аутентифицирован, перенаправляем на главную страницу
     if request.user.is_authenticated:

@@ -17,10 +17,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from main.views import login_view
+from main.views import login_view, search_files
 
 urlpatterns = [
     path('login/', login_view, name='login'),
+    path('search/', search_files, name='search_files'),
     path('admin/', admin.site.urls),
     path('', include('main.urls'))
 ]
